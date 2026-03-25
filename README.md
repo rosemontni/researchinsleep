@@ -26,6 +26,7 @@ This workspace is a lightweight Codex-native wrapper around the upstream ARIS re
 - Fetches selected upstream `SKILL.md` files directly from GitHub at runtime
 - Caches them locally under `.aris-cache/`
 - Creates persistent local run state under `.aris/runs/<run-id>/`
+- Creates persistent project memory under `lessons-learned/`
 - Renders a Codex-friendly stage prompt that inlines the upstream skill text
 - Tracks which stage of the ARIS pipeline you are in
 
@@ -130,6 +131,17 @@ For a safer one-command start, run `doctor` first and then `e2e`.
 - The wrapper keeps upstream skill URLs in `config/upstream_skills.json`.
 - Pipelines are defined locally so you can keep your preferred loop shape even if upstream adds more skills.
 - The `run` subcommand can target an explicit standalone CLI path, which is recommended on Windows to avoid the packaged app alias under `WindowsApps`.
+
+## Perpetual Lessons Learned
+
+This repo now includes a permanent [lessons-learned](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\lessons-learned) folder for:
+
+- hardware and software constraints
+- troubleshooting and recovery notes
+- upstream workflow gaps and local fixes
+- general reusable insights
+
+The local runner also appends a usage line to [SESSION_LOG.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\lessons-learned\SESSION_LOG.md) whenever `aris_codex.py` is used, and stage prompts now instruct Codex to record meaningful new lessons before finishing the stage.
 
 ## Scratch ADRD Scaffold
 

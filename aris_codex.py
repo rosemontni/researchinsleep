@@ -25,6 +25,8 @@ ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "upstream_skills.json"
 CACHE_ROOT = ROOT / ".aris-cache"
 RUNS_ROOT = ROOT / ".aris" / "runs"
+LESSONS_ROOT = ROOT / "lessons-learned"
+LESSONS_SESSION_LOG = LESSONS_ROOT / "SESSION_LOG.md"
 
 
 def utc_now() -> str:
@@ -59,6 +61,171 @@ def read_json(path: Path) -> dict[str, Any]:
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     ensure_dir(path.parent)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def ensure_text_file(path: Path, content: str) -> None:
+    ensure_dir(path.parent)
+    if not path.exists():
+        path.write_text(content, encoding="utf-8")
+
+
+def ensure_lessons_learned_scaffold() -> None:
+    ensure_dir(LESSONS_ROOT)
+    ensure_text_file(
+        LESSONS_ROOT / "README.md",
+        """# Lessons Learned
+
+This folder is the permanent learning memory for this project.
+
+Use it to record:
+
+- hardware and software constraints that affected execution
+- troubleshooting steps that worked or failed
+- weaknesses discovered in the upstream workflow
+- local improvements that closed those gaps
+- general insights worth carrying into future runs
+
+This process is ongoing. Every meaningful project use should either add a lesson or consciously confirm that no new lesson emerged.
+""",
+    )
+    ensure_text_file(
+        LESSONS_ROOT / "ENTRY_TEMPLATE.md",
+        """# Entry Template
+
+## Context
+
+- Date:
+- Command or stage:
+- Run ID:
+
+## Problem
+
+What went wrong, or what weakness became visible?
+
+## Constraint
+
+What local hardware, software, workflow, or knowledge constraint mattered?
+
+## Resolution
+
+What actually fixed it?
+
+## Durable Insight
+
+What should we remember next time?
+
+## Follow-up
+
+What should be improved later?
+""",
+    )
+    ensure_text_file(
+        LESSONS_ROOT / "HARDWARE_SOFTWARE_CONSTRAINTS.md",
+        """# Hardware And Software Constraints
+
+## 2026-03-25 - Windows Store alias was not a reliable Codex automation target
+
+### Problem
+
+The packaged Codex app alias under `C:\\Program Files\\WindowsApps\\...` could not be spawned reliably from automation.
+
+### Resolution
+
+Use a standalone Codex CLI binary at `C:\\Users\\xliup\\bin\\codex.exe` and target it explicitly from the wrapper.
+
+### Durable Insight
+
+For Windows automation, prefer an explicit standalone CLI path over the Store app alias.
+
+## 2026-03-25 - Codex Windows sandbox sometimes blocked long stage writes
+
+### Problem
+
+Long ARIS stages could complete logically but still fail to persist artifacts because of the local Windows sandbox behavior.
+
+### Resolution
+
+Add `--dangerous-bypass` as an explicit local workaround for trusted workspaces.
+
+### Durable Insight
+
+On this machine, artifact persistence is more important than strict sandboxing for long trusted research runs.
+""",
+    )
+    ensure_text_file(
+        LESSONS_ROOT / "UPSTREAM_GAPS_AND_LOCAL_FIXES.md",
+        """# Upstream Gaps And Local Fixes
+
+## 2026-03-25 - End-to-end needed a real local runner
+
+### Upstream Gap
+
+Upstream ARIS exposes a top-level pipeline concept, but local Codex execution still needed an explicit runner.
+
+### Local Fix
+
+Add `e2e` to `aris_codex.py` so the workflow can initialize, run, validate, and advance stages automatically.
+
+### Durable Insight
+
+For agent workflows, “end-to-end” works best as one command on top of a staged artifact system, not as one giant reasoning pass.
+
+## 2026-03-25 - Stage completion needed a stronger contract
+
+### Upstream Gap
+
+Completion was convention-based, which made automation brittle.
+
+### Local Fix
+
+Validate completion markers before `e2e` auto-advances.
+
+### Durable Insight
+
+Artifact-driven workflows should promote completion formats to first-class contracts, not just habits.
+
+## 2026-03-25 - Environment assumptions needed a doctor step
+
+### Upstream Gap
+
+Important local assumptions were discovered only after the run had already started.
+
+### Local Fix
+
+Add `doctor` checks for upstream config, Codex CLI, local codebase signals, and paper toolchain readiness.
+
+### Durable Insight
+
+Preflight checks are part of the workflow, not a convenience feature.
+""",
+    )
+    ensure_text_file(
+        LESSONS_ROOT / "GENERAL_INSIGHTS.md",
+        """# General Insights
+
+## 2026-03-25 - Thin wrappers age better than vendored prompt packs
+
+Keeping fast-changing workflow logic upstream and wrapping it locally creates less drift than copying the workflow into the project.
+
+## 2026-03-25 - Review loops matter more than idea generation alone
+
+The strongest value in this workflow is not just producing an idea quickly. It is forcing the claims, implementation, and paper framing through repeated criticism.
+""",
+    )
+    ensure_text_file(
+        LESSONS_SESSION_LOG,
+        """# Session Log
+
+This file records project usage so lessons can be attached to real sessions over time.
+""",
+    )
+
+
+def append_session_log(command: str, argv: list[str]) -> None:
+    ensure_lessons_learned_scaffold()
+    line = f"- {utc_now()} | command: `{command}` | argv: `{ ' '.join(argv) }`\n"
+    with LESSONS_SESSION_LOG.open("a", encoding="utf-8") as handle:
+        handle.write(line)
 
 
 def run_subprocess(cmd: list[str], timeout: int = 30) -> tuple[int, str]:
@@ -203,6 +370,7 @@ You are running an upstream ARIS skill inside a local Codex workflow wrapper.
 - Treat this workspace as the project root.
 - If the upstream skill expects external review tools that are unavailable, continue with the strongest direct Codex equivalent and note the substitution explicitly.
 - Before finishing this stage, write a concise stage report to `.aris/runs/{run.run_id}/notes/{skill_name}.md`.
+- If you discover or overcome a hardware/software constraint, an upstream workflow weakness, or a reusable insight, append it to the appropriate file under `lessons-learned/` before you finish the stage.
 - If the stage is substantially complete, write `.aris/runs/{run.run_id}/notes/{skill_name}.complete.json` with:
   - `stage`
   - `completed_at`
@@ -602,8 +770,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_lessons_learned_scaffold()
     parser = build_parser()
     args = parser.parse_args(argv)
+    append_session_log(args.command, argv or sys.argv[1:])
     return args.func(args)
 
 
