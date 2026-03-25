@@ -1,0 +1,54 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Budgeted routing beats the fully factorized baseline}
+
+Table~\ref{tab:main} and Figure~\ref{fig:frontier} show the first clear result: once the controller is allowed to spend a small amount of extra budget, the synthetic factorization gap shrinks substantially. Moving from the factorized baseline to the strict 10\% configuration improves token accuracy from $0.6222$ to $0.6413$ and dependency accuracy from $0.3446$ to $0.4363$. Relaxing the budget further to the span-4 configuration improves token accuracy to $0.6825$ and dependency accuracy to $0.6245$.
+
+The 5\% budget setting is also informative. In that regime, the controller collapses back to fully factorized behavior and performance is unchanged. This indicates that the gains are not a free side effect of the router logic; they appear only when the controller is permitted to spend enough budget to activate richer dependency handling.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\figBudgetFrontierPath}
+\caption{Budget frontier on the synthetic task. A very small budget collapses to factorized behavior, while a relaxed but still minority budget produces large dependency gains.}
+\label{fig:frontier}
+\end{figure}
+
+\subsection{The current adaptive policy is viable, but not yet dominant}
+
+The stronger question is whether the adaptive three-mode policy is itself superior to simpler matched-budget alternatives. Figure~\ref{fig:matched} shows that the answer is not yet yes. Under the relaxed span-4 budget, the \coupled-only surrogate attains the best token accuracy ($0.6871$), slightly above \method\ ($0.6825$). The random router reaches the highest dependency accuracy on this specific synthetic slice, while \method\ stays near the top without clearly dominating any single metric. Full \method\ remains competitive and uses both expensive modes, but the evidence does not justify a claim that adaptive routing is already the best same-budget strategy.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\figSameBudgetPath}
+\caption{Matched-budget comparison under the relaxed span-4 setting. \method\ is competitive and mixes both expensive modes, but a simpler \coupled-only surrogate is slightly stronger on token accuracy.}
+\label{fig:matched}
+\end{figure}
+
+That negative result is scientifically useful. It narrows where future work should go. The router is not yet the star of the system; the main gains seem to come from allowing \coupled\ decoding at all. A stronger paper would need either a learned router that beats fixed policies under the same budget, or a richer task where \micro\ updates contribute more clearly and more often.
+
+\begin{table}[t]
+\centering
+\caption{Mode usage for the relaxed span-4 \method\ run. The controller uses both expensive modes, which means the negative result is not caused by complete collapse to a single expensive option.}
+\label{tab:modes}
+\input{\tableModeUsagePath}
+\end{table}
+
+Table~\ref{tab:modes} confirms that the relaxed-budget run does not completely collapse to one mode. The controller routes 407 tokens to \coupled\ and 95 tokens to \micro. That is enough to support a narrow interpretability claim: the controller can express heterogeneous mode usage. It is not enough to support the stronger performance claim reviewers would want from a main empirical paper.
+
+\subsection{Longer contexts reinforce the same conclusion}
+
+The length-40 stress test in Figure~\ref{fig:long} strengthens the synthetic feasibility story. \method\ improves token accuracy from $0.6268$ to $0.6526$ and dependency accuracy from $0.3720$ to $0.5015$. The absolute dependency gain of 12.95 points is one of the clearest positive results in the study.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\linewidth]{\figLongContextPath}
+\caption{Long-context stress test with length-40 sequences. \method\ retains a directional advantage over the factorized baseline.}
+\label{fig:long}
+\end{figure}
+
+At the same time, the long-context run reinforces the earlier caution: almost all of its expensive routing goes to \coupled\ rather than \micro. The takeaway is consistent across experiments. Selective dependency handling helps, but the present scaffold still behaves as though local coupling is the main useful expensive operation.
+
+\subsection{Interpretation}
+
+Taken together, the experiments support three statements. First, the factorization gap is heterogeneous enough that non-factorized computation can be concentrated on a minority of tokens. Second, there is a real budget frontier rather than a binary choice between full factorization and full coupling. Third, the current heuristic controller is not yet the final answer: simpler same-budget policies can match or exceed it depending on the metric. This is why we frame the paper as a feasibility study rather than a finished adaptive-routing result.

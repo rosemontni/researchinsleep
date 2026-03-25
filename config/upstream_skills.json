@@ -1,0 +1,57 @@
+{
+  "repo": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
+  "branch": "main",
+  "skills": {
+    "idea-discovery": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/idea-discovery/SKILL.md",
+      "purpose": "Workflow 1: idea generation and novelty-grounded research exploration."
+    },
+    "experiment-bridge": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/experiment-bridge/SKILL.md",
+      "purpose": "Workflow 1.5: implementation, deployment, and first experiment execution."
+    },
+    "auto-review-loop": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/auto-review-loop/SKILL.md",
+      "purpose": "Workflow 2: iterative review, fix, rerun, and re-review."
+    },
+    "paper-writing": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/paper-writing/SKILL.md",
+      "purpose": "Workflow 3: narrative-to-paper pipeline."
+    },
+    "rebuttal": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/rebuttal/SKILL.md",
+      "purpose": "Workflow 4: review response and rebuttal drafting."
+    },
+    "research-pipeline": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/research-pipeline/SKILL.md",
+      "purpose": "One-shot end-to-end ARIS pipeline skill."
+    },
+    "research-refine": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/research-refine/SKILL.md",
+      "purpose": "Method refinement with iterative external review."
+    },
+    "experiment-plan": {
+      "raw_url": "https://raw.githubusercontent.com/wanshuiyin/Auto-claude-code-research-in-sleep/main/skills/experiment-plan/SKILL.md",
+      "purpose": "Claim-driven experiment planning."
+    }
+  },
+  "pipelines": {
+    "research-pipeline": [
+      "idea-discovery",
+      "experiment-bridge",
+      "auto-review-loop",
+      "paper-writing"
+    ],
+    "research-refine-pipeline": [
+      "research-refine",
+      "experiment-plan",
+      "experiment-bridge",
+      "auto-review-loop",
+      "paper-writing"
+    ],
+    "rebuttal-only": [
+      "rebuttal"
+    ]
+  }
+}
+

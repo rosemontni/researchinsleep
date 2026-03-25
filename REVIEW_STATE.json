@@ -1,0 +1,9 @@
+{
+  "round": 2,
+  "threadId": "local-direct-review-substitution",
+  "status": "completed",
+  "last_score": 6.0,
+  "last_verdict": "almost",
+  "pending_experiments": [],
+  "timestamp": "2026-03-24T22:13:32-04:00"
+}

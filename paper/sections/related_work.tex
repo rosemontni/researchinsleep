@@ -1,0 +1,17 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Discrete diffusion language modeling.}
+Discrete diffusion models extend denoising diffusion ideas to categorical state spaces \citep{austin2021d3pm}. For text, diffusion-style language modeling has been explored in continuous embedding spaces \citep{strudel2022selfconditioned} and, more recently, in masked or discrete token spaces that emphasize parallel generation. These models motivate the core appeal of diffusion for language: generation can in principle be faster than autoregressive decoding when many tokens are updated simultaneously.
+
+\paragraph{The factorization barrier.}
+Parallel decoding becomes difficult when simultaneously updated tokens are strongly dependent. Recent work argues that this limitation is structural rather than incidental: the output family is often fully factorized even when the task requires joint reasoning. CoDD is the clearest recent statement of this argument, replacing factorized outputs with a tractable coupled inference layer \citep{li2026codd}. Our work differs in emphasis. We do not propose a better global output family. Instead, we ask whether a cheaper model can remain factorized on easy regions while escalating only a small subset of spans to richer handlers.
+
+\paragraph{Efficient diffusion decoding.}
+Several lines of work try to make diffusion decoding practical without fully abandoning parallelism. Sequential Diffusion Language Models move toward dynamic subsequence decoding \citep{liu2026sdlm}. Fast-dLLM v2 uses block diffusion and caching to improve the speed-quality frontier of diffusion LLMs \citep{wu2026fastdllmv2}. These methods show that partial sequential structure and systems-aware decoding can be valuable. \method\ is complementary: it focuses on \emph{where} extra dependency handling should be applied under a fixed budget.
+
+\paragraph{Inference-time repair and hybridization.}
+Remasking and self-correction approaches spend additional inference compute after an initial diffusion update \citep{wang2025remasking,zhang2026selfcorrection}. Hybrid AR/diffusion models further blur the line between full parallelism and sequential generation \citep{fathi2025unifying,sahoo2026esolm}. Those works motivate our controller perspective. If extra compute already helps, then the next question is whether a routing policy can allocate that compute more selectively to the regions that need it most.
+
+\paragraph{Position of this paper.}
+The present paper should be read as a feasibility probe that sits between global coupling and sampler heuristics. It does not claim to replace CoDD-style joint modeling, nor to compete directly with production dLLMs. Its narrower contribution is to show that selective dependency allocation is measurable, budgetable, and diagnostically interpretable in a controlled setting.

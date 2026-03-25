@@ -1,0 +1,14 @@
+.aris-cache/
+.aris/
+__pycache__/
+__MACOSX/
+.pytest_cache/
+*.pyc
+tectonic.exe
+iclr2026/
+iclr2026.zip
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out

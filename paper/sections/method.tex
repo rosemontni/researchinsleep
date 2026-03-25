@@ -1,0 +1,41 @@
+\section{Adaptive Dependency Routing Diffusion}
+\label{sec:method}
+
+We consider a masked sequence at diffusion step $t$ with a set of unresolved regions $\mathcal{R}_t$. Each region is a short subset of token positions that appears mutually dependent according to a dependency estimator. In the local implementation, these regions are synthetic copy or progression groups exposed by the benchmark generator, but the routing abstraction itself is broader.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\figOverviewPath}
+\caption{Overview of \method. A dependency estimator scores unresolved regions, a budget controller restricts the use of expensive modes, and the router assigns each region to the cheapest mode that appears adequate.}
+\label{fig:overview}
+\end{figure}
+
+\paragraph{Three decoding modes.}
+Each unresolved region $r \in \mathcal{R}_t$ is assigned to one of three modes:
+\begin{itemize}
+\item \factorized: predict tokens independently and update the region in one cheap parallel step.
+\item \coupled: apply a short-span joint handler to a small local group, intended for copy-like or strongly coupled spans.
+\item \micro: decode a tiny subset sequentially, then return to parallel denoising.
+\end{itemize}
+The key idea is not that one of these modes is universally best, but that different regions may need different levels of dependency modeling.
+
+\paragraph{Dependency estimator.}
+For each region $r$, the estimator returns a risk score $s_t(r)$ and a confidence proxy $c_t(r)$. The current code uses a heuristic version of this estimator in which larger unresolved spans and progression-like patterns receive higher risk scores. This choice keeps the experiment transparent: routing gains cannot be attributed to a hidden high-capacity learned model.
+
+\paragraph{Budgeted router.}
+The router selects a mode $m_t(r) \in \{F,C,S\}$ for factorized, coupled-local, or micro-sequential decoding. Let $|r|$ denote the number of unresolved tokens in region $r$. At each diffusion step we constrain the total amount of expensive routing by
+\begin{align}
+\sum_{r \in \mathcal{R}_t} \mathbf{1}[m_t(r) \neq \factorized] |r| &\leq B_{\mathrm{tok}}, \\
+\sum_{r \in \mathcal{R}_t} \mathbf{1}[m_t(r) = \coupled] &\leq B_{\mathrm{cpl}}, \\
+\sum_{r \in \mathcal{R}_t} \mathbf{1}[m_t(r) = \micro] &\leq B_{\mathrm{mic}}.
+\end{align}
+The implementation additionally caps the maximum size of a \coupled\ span. This prevents the method from quietly degenerating into broad joint decoding.
+
+\paragraph{Routing policy.}
+The current policy is heuristic. Progression-like groups and very small high-risk groups are biased toward \micro; copy-like groups and larger short spans are biased toward \coupled. If neither expensive option fits the remaining budget, the region falls back to \factorized. This design is intentionally simple because the paper's goal is to test whether selective allocation is worth pursuing at all.
+
+\paragraph{Local decoding operators.}
+The three local operators are also synthetic. \factorized\ predictions are noisy and independent. \coupled\ decoding is more reliable on short groups, while \micro\ decoding first predicts an anchor token with high confidence and then conditionally resolves the rest of the region. These operators are not intended as faithful substitutes for a production dLLM; they serve as controlled surrogates for cheap, local-joint, and local-sequential behavior.
+
+\paragraph{Why this formulation matters.}
+The formulation forces the paper to answer a specific question: if richer dependency models are expensive, can a controller spend that budget on the right minority of regions? That question remains meaningful even though the present implementation is synthetic and heuristic.

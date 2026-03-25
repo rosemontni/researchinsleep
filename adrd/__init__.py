@@ -1,0 +1,2 @@
+"""Minimal ADRD research scaffold."""
+

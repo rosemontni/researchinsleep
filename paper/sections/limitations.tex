@@ -1,0 +1,19 @@
+\section{Limitations And Next Steps}
+\label{sec:limitations}
+
+This paper has several important limitations.
+
+\paragraph{Synthetic task only.}
+All evidence comes from a local synthetic benchmark. The task is useful for isolating dependency structure, but it is not a substitute for evaluation on real text, real denoisers, or real latency-sensitive decoding.
+
+\paragraph{Heuristic routing.}
+The current estimator and router are not learned. They are hand-designed rules that expose the controller hypothesis as cleanly as possible. This makes the experiment interpretable, but it also means the present paper cannot claim that a trainable routing network has been validated.
+
+\paragraph{No direct CoDD implementation.}
+Although the paper is motivated by the factorization barrier literature, this repo does not contain a real CoDD-style baseline. The ``coupled-only'' surrogate is only a synthetic local analogue. A stronger follow-up paper would compare against an actual globally coupled dLLM implementation under matched compute.
+
+\paragraph{No external repair baseline.}
+The workspace does not contain a full remasking or self-correction implementation. Those baselines are cited for context but not reproduced here.
+
+\paragraph{What would upgrade the paper.}
+The clearest next step is to port the routing abstraction to a public dLLM backbone and ask the same question under fixed denoiser calls or matched wall-clock time. The router should be learned, not heuristic, and the evaluation should include direct comparisons against global coupling, remasking, and hybrid AR/diffusion baselines. Until then, the current result should be read as a scoped but honest pilot.
