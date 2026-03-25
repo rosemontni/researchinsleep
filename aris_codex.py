@@ -61,6 +61,21 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def run_subprocess(cmd: list[str], timeout: int = 30) -> tuple[int, str]:
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return 1, str(exc)
+    return result.returncode, result.stdout.strip()
+
+
 def fetch_text(url: str) -> str:
     with urllib.request.urlopen(url) as response:
         return response.read().decode("utf-8")
@@ -211,6 +226,101 @@ def prompt_path_for(run: RunState, skill_name: str) -> Path:
     return run.run_dir / "prompts" / f"{index:02d}-{skill_name}.md"
 
 
+def stage_complete_path(run: RunState, stage_name: str) -> Path:
+    return run.run_dir / "notes" / f"{stage_name}.complete.json"
+
+
+def stage_blocked_path(run: RunState, stage_name: str) -> Path:
+    return run.run_dir / "notes" / f"{stage_name}.blocked.md"
+
+
+def parse_stage_complete(path: Path) -> dict[str, Any]:
+    payload = read_json(path)
+    required = {"stage", "completed_at", "summary", "next_stage"}
+    missing = sorted(required - set(payload))
+    if missing:
+        raise ValueError(f"missing keys: {', '.join(missing)}")
+    return payload
+
+
+def validate_stage_markers(run: RunState, stage_name: str) -> tuple[bool, str]:
+    complete_path = stage_complete_path(run, stage_name)
+    blocked_path = stage_blocked_path(run, stage_name)
+    if complete_path.exists():
+        try:
+            payload = parse_stage_complete(complete_path)
+        except (json.JSONDecodeError, ValueError) as exc:
+            return False, f"invalid completion marker {complete_path}: {exc}"
+        if payload["stage"] != stage_name:
+            return False, f"completion marker stage mismatch: expected {stage_name}, got {payload['stage']}"
+        return True, f"complete: {complete_path}"
+    if blocked_path.exists():
+        return True, f"blocked: {blocked_path}"
+    return False, "no completion or blocker marker found"
+
+
+def detect_local_codebase() -> tuple[bool, str]:
+    signals = [ROOT / "pyproject.toml", ROOT / "adrd", ROOT / "paper", ROOT / "tests"]
+    existing = [path.name for path in signals if path.exists()]
+    if existing:
+        return True, f"local project signals found: {', '.join(existing)}"
+    return False, "no local codebase signals found"
+
+
+def detect_paper_toolchain() -> tuple[bool, str]:
+    local_tectonic = ROOT / "tectonic.exe"
+    if local_tectonic.exists():
+        return True, f"local tectonic found at {local_tectonic}"
+    for candidate in ("tectonic", "latexmk", "pdflatex"):
+        code, output = run_subprocess([candidate, "--version"], timeout=15)
+        if code == 0:
+            first_line = output.splitlines()[0] if output else candidate
+            return True, f"{candidate} available: {first_line}"
+    return False, "no LaTeX toolchain detected (tectonic/latexmk/pdflatex)"
+
+
+def run_doctor(codex_bin: str, pipeline: str | None = None) -> dict[str, Any]:
+    config = load_config()
+    pipeline_name = pipeline or "research-pipeline"
+    pipeline_stages = config["pipelines"].get(pipeline_name, [])
+    codex_code, codex_output = run_subprocess([os.path.expandvars(codex_bin), "--version"])
+    codebase_ok, codebase_msg = detect_local_codebase()
+    paper_ok, paper_msg = detect_paper_toolchain()
+    upstream_ok = bool(config.get("skills")) and bool(config.get("pipelines"))
+    return {
+        "workspace": str(ROOT),
+        "pipeline": pipeline_name,
+        "stages": pipeline_stages,
+        "checks": {
+            "upstream_config": {
+                "ok": upstream_ok,
+                "details": "upstream skills and pipelines loaded" if upstream_ok else "missing upstream skill config",
+            },
+            "codex_cli": {
+                "ok": codex_code == 0,
+                "details": codex_output.splitlines()[0] if codex_output else "codex CLI check failed",
+            },
+            "local_codebase": {
+                "ok": codebase_ok,
+                "details": codebase_msg,
+            },
+            "paper_toolchain": {
+                "ok": paper_ok,
+                "details": paper_msg,
+            },
+        },
+    }
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    report = run_doctor(args.codex_bin, args.pipeline)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    fatal_checks = ("upstream_config", "codex_cli")
+    failed = [name for name in fatal_checks if not report["checks"][name]["ok"]]
+    return 0 if not failed else 2
+
+
 def cmd_pipelines(_: argparse.Namespace) -> int:
     config = load_config()
     for name, stages in config["pipelines"].items():
@@ -341,6 +451,92 @@ def cmd_run(args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def cmd_e2e(args: argparse.Namespace) -> int:
+    if not args.skip_doctor:
+        report = run_doctor(args.codex_bin, args.pipeline)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        fatal_checks = ("upstream_config", "codex_cli")
+        failed = [name for name in fatal_checks if not report["checks"][name]["ok"]]
+        if failed:
+            print(f"Doctor failed required checks: {', '.join(failed)}")
+            return 2
+
+    if args.run_id:
+        run = load_run(args.run_id)
+    else:
+        if not args.goal:
+            print("`--goal` is required when starting a new end-to-end run.")
+            return 2
+        overrides = {}
+        if args.ref_paper:
+            overrides["ref_paper"] = args.ref_paper
+        if args.base_repo:
+            overrides["base_repo"] = args.base_repo
+        run = create_run(args.pipeline, args.goal, args.new_run_id, overrides)
+        print(f"Initialized run: {run.run_id}")
+
+    completed_stages = 0
+    while True:
+        run = load_run(run.run_id)
+        if run.status == "completed" or run.current_stage is None:
+            print(f"Run {run.run_id} completed.")
+            return 0
+
+        stage_name = run.current_stage
+        complete_path = stage_complete_path(run, stage_name)
+        blocked_path = stage_blocked_path(run, stage_name)
+
+        if complete_path.exists():
+            ok, details = validate_stage_markers(run, stage_name)
+            if not ok:
+                print(details)
+                return 5
+            print(f"Stage already complete, advancing: {stage_name}")
+            cmd_advance(argparse.Namespace(run_id=run.run_id))
+            completed_stages += 1
+            if args.max_stages is not None and completed_stages >= args.max_stages:
+                print(f"Stopped after advancing {completed_stages} stage(s).")
+                return 0
+            continue
+
+        cmd_next(argparse.Namespace(run_id=run.run_id, refresh=args.refresh))
+        run_code = cmd_run(
+            argparse.Namespace(
+                run_id=run.run_id,
+                codex_bin=args.codex_bin,
+                dangerous_bypass=args.dangerous_bypass,
+            )
+        )
+        if run_code != 0:
+            print(f"Stage execution exited non-zero for: {stage_name}")
+            return run_code
+
+        run = load_run(run.run_id)
+        complete_path = stage_complete_path(run, stage_name)
+        blocked_path = stage_blocked_path(run, stage_name)
+
+        if complete_path.exists():
+            ok, details = validate_stage_markers(run, stage_name)
+            if not ok:
+                print(details)
+                return 5
+            print(f"Stage completed: {stage_name}")
+            cmd_advance(argparse.Namespace(run_id=run.run_id))
+            completed_stages += 1
+            if args.max_stages is not None and completed_stages >= args.max_stages:
+                print(f"Stopped after completing {completed_stages} stage(s).")
+                return 0
+            continue
+
+        if blocked_path.exists():
+            print(f"Stage blocked: {stage_name}")
+            print(f"Blocker note: {blocked_path}")
+            return 3
+
+        print(f"Stage ended without a completion or blocker marker: {stage_name}")
+        return 4
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Minimal Codex-native wrapper for upstream ARIS skills.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -365,6 +561,11 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("run_id")
     status.set_defaults(func=cmd_status)
 
+    doctor = subparsers.add_parser("doctor", help="Run local preflight checks for the Codex ARIS workflow.")
+    doctor.add_argument("pipeline", nargs="?", default="research-pipeline")
+    doctor.add_argument("--codex-bin", default=r"C:\Users\xliup\bin\codex.exe")
+    doctor.set_defaults(func=cmd_doctor)
+
     nxt = subparsers.add_parser("next", help="Fetch the current stage skill and render a prompt file.")
     nxt.add_argument("run_id")
     nxt.add_argument("--refresh", action="store_true")
@@ -379,6 +580,23 @@ def build_parser() -> argparse.ArgumentParser:
     run_cmd.add_argument("--codex-bin", default=r"C:\Users\xliup\bin\codex.exe")
     run_cmd.add_argument("--dangerous-bypass", action="store_true")
     run_cmd.set_defaults(func=cmd_run)
+
+    e2e = subparsers.add_parser(
+        "e2e",
+        help="Initialize or resume a run and execute stages automatically until completion or block.",
+    )
+    e2e.add_argument("pipeline", nargs="?", default="research-pipeline")
+    e2e.add_argument("--goal")
+    e2e.add_argument("--run-id")
+    e2e.add_argument("--new-run-id")
+    e2e.add_argument("--ref-paper")
+    e2e.add_argument("--base-repo")
+    e2e.add_argument("--refresh", action="store_true")
+    e2e.add_argument("--max-stages", type=int)
+    e2e.add_argument("--codex-bin", default=r"C:\Users\xliup\bin\codex.exe")
+    e2e.add_argument("--dangerous-bypass", action="store_true")
+    e2e.add_argument("--skip-doctor", action="store_true")
+    e2e.set_defaults(func=cmd_e2e)
 
     return parser
 

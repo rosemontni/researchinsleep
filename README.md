@@ -1,9 +1,25 @@
 # ARIS Codex Skeleton
 
+![ARIS Codex banner](figures/repo-banner.svg)
+
+Local improvements over upstream ARIS are summarized in [UPSTREAM_IMPROVEMENTS.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\UPSTREAM_IMPROVEMENTS.md).
+
+## Local Improvements Over Upstream
+
+This repo keeps the upstream ARIS skills as the source of truth, but adds a thin local execution layer that makes the workflow more reliable in Codex.
+
+- real one-command `e2e` runner instead of only implicit top-level orchestration
+- `doctor` preflight checks for Codex CLI, local project signals, and paper toolchain readiness
+- validated stage completion and blocker markers before auto-advance
+- cleaner separation between workflow wrapper, run state, and example research project
+- explicit end-to-end behavior built on staged, resumable artifacts rather than one monolithic prompt
+
 This workspace is a lightweight Codex-native wrapper around the upstream ARIS repository:
 
 - Upstream repo: [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep)
 - Goal: use ARIS workflows from Codex without cloning the full upstream repo into this workspace
+
+![Workflow map](figures/workflow-map.svg)
 
 ## What This Skeleton Does
 
@@ -26,8 +42,23 @@ Instead, it treats upstream ARIS skills as the source of truth and wraps them in
 ARIS is actively changing upstream. If we copied the skills into this workspace, they would drift quickly. This wrapper keeps a very small local surface area and refreshes the authoritative skill content from upstream when needed.
 
 Start with [QUICKSTART.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\QUICKSTART.md) if you want the shortest explanation of how the workflow fits together.
-
 ## Quick Start
+
+Run the whole workflow end to end in one command:
+
+```powershell
+python .\aris_codex.py e2e research-pipeline --goal "factorized gap in discrete diffusion LMs" --dangerous-bypass
+```
+
+Run a quick preflight before starting:
+
+```powershell
+python .\aris_codex.py doctor
+```
+
+This still uses the staged ARIS artifact model underneath, but the wrapper now drives the stages automatically until the run completes or a stage writes a blocker file.
+
+If you want the lower-level staged controls, use the commands below.
 
 Create a run:
 
@@ -89,6 +120,10 @@ python .\aris_codex.py status <run-id>
 3. Open that prompt file in Codex and execute the stage.
 4. When the stage is done, use `advance` to move the run forward.
 5. Repeat until the pipeline finishes.
+
+For a one-command version of that same flow, use `e2e`.
+
+For a safer one-command start, run `doctor` first and then `e2e`.
 
 ## Notes
 

@@ -51,6 +51,33 @@ The important workflow rule is: each stage writes artifacts to disk, so progress
 
 ## One-Minute Start
 
+Fastest path from goal to finished run:
+
+```powershell
+python .\aris_codex.py doctor
+```
+
+```powershell
+python .\aris_codex.py e2e research-pipeline --goal "factorized gap in discrete diffusion LMs" --dangerous-bypass
+```
+
+That command will:
+
+- create a run if needed
+- fetch each upstream ARIS stage
+- execute the stage through Codex
+- auto-advance when a stage writes its completion marker
+- stop only if the run completes or a stage writes a blocker note
+
+The doctor step checks the local wrapper assumptions before the loop starts:
+
+- upstream config is loaded
+- Codex CLI is reachable
+- a local project/codebase exists
+- a paper toolchain is available when you get to paper-writing
+
+If you want more manual control, use the commands below.
+
 List available pipelines:
 
 ```powershell
@@ -86,6 +113,12 @@ Inspect run state any time:
 
 ```powershell
 python .\aris_codex.py status <run-id>
+```
+
+Run preflight at any point:
+
+```powershell
+python .\aris_codex.py doctor
 ```
 
 ## Why `--dangerous-bypass` Exists
@@ -156,6 +189,9 @@ These are the main ideas behind how this repo works:
 - **Artifact-driven execution**
   - Each stage writes files, not just chat output.
 
+- **Validated stage contracts**
+  - `e2e` only auto-advances on a valid completion marker.
+
 - **Review before paper**
   - Claims are supposed to be narrowed by evidence before writing.
 
@@ -170,4 +206,3 @@ If you want to understand the whole setup quickly, read these in order:
 2. [QUICKSTART.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\QUICKSTART.md)
 3. [ITERATION_REPORT.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\ITERATION_REPORT.md)
 4. [AUTO_REVIEW.md](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\AUTO_REVIEW.md)
-

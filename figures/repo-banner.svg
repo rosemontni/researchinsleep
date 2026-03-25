@@ -1,0 +1,73 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="1180" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0E1726"/>
+      <stop offset="0.45" stop-color="#102A43"/>
+      <stop offset="1" stop-color="#1F6FEB"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="250" y1="170" x2="1040" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111F" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#123B64" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0" y1="0" x2="220" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD166"/>
+      <stop offset="1" stop-color="#FF8A5B"/>
+    </linearGradient>
+    <filter id="blur" x="0" y="0" width="1280" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="640" rx="32" fill="url(#bg)"/>
+
+  <g filter="url(#blur)" opacity="0.35">
+    <circle cx="1050" cy="120" r="120" fill="#FFD166"/>
+    <circle cx="205" cy="540" r="140" fill="#3ECF8E"/>
+    <circle cx="930" cy="480" r="110" fill="#78A6FF"/>
+  </g>
+
+  <rect x="80" y="72" width="1120" height="496" rx="32" fill="url(#panel)" stroke="#FFFFFF" stroke-opacity="0.18"/>
+
+  <rect x="124" y="118" width="220" height="56" rx="28" fill="url(#pill)"/>
+  <text x="156" y="153" fill="#08111F" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">UPSTREAM FIRST</text>
+
+  <text x="126" y="244" fill="#F8FBFF" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="800">ARIS for Codex</text>
+  <text x="126" y="304" fill="#D4E8FF" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="500">
+    Run upstream skills. Keep local state. Ship a paper-shaped result.
+  </text>
+  <text x="126" y="350" fill="#AFC9E6" font-family="Consolas, Menlo, monospace" font-size="24">
+    e2e runner + doctor preflight + validated stage markers
+  </text>
+
+  <g>
+    <rect x="124" y="408" width="216" height="92" rx="22" fill="#0C2036" stroke="#2B6CB0"/>
+    <text x="148" y="444" fill="#FFD166" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">1. Fetch Skill</text>
+    <text x="148" y="476" fill="#D7E9FF" font-family="Segoe UI, Arial, sans-serif" font-size="18">Pull latest upstream SKILL.md</text>
+  </g>
+
+  <g>
+    <rect x="368" y="408" width="216" height="92" rx="22" fill="#0C2036" stroke="#2B6CB0"/>
+    <text x="392" y="444" fill="#7EE787" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">2. Run in Codex</text>
+    <text x="392" y="476" fill="#D7E9FF" font-family="Segoe UI, Arial, sans-serif" font-size="18">Local prompts, local artifacts</text>
+  </g>
+
+  <g>
+    <rect x="612" y="408" width="216" height="92" rx="22" fill="#0C2036" stroke="#2B6CB0"/>
+    <text x="636" y="444" fill="#7CC7FF" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">3. Review Loop</text>
+    <text x="636" y="476" fill="#D7E9FF" font-family="Segoe UI, Arial, sans-serif" font-size="18">Claims tightened by evidence</text>
+  </g>
+
+  <g>
+    <rect x="856" y="408" width="216" height="92" rx="22" fill="#0C2036" stroke="#2B6CB0"/>
+    <text x="880" y="444" fill="#FFB4A2" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">4. Paper Output</text>
+    <text x="880" y="476" fill="#D7E9FF" font-family="Segoe UI, Arial, sans-serif" font-size="18">LaTeX, PDF, durable logs</text>
+  </g>
+
+  <path d="M341 454H367" stroke="#7AA2D4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M585 454H611" stroke="#7AA2D4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M829 454H855" stroke="#7AA2D4" stroke-width="4" stroke-linecap="round"/>
+
+  <text x="124" y="547" fill="#B6CCE3" font-family="Segoe UI, Arial, sans-serif" font-size="20">
+    Thin wrapper around the upstream ARIS repo, built for active upstream development.
+  </text>
+</svg>
