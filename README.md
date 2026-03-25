@@ -32,6 +32,18 @@ This workspace is a lightweight Codex-native wrapper around the upstream ARIS re
 - Renders a Codex-friendly stage prompt that inlines the upstream skill text
 - Tracks which stage of the ARIS pipeline you are in
 
+## Default Workflow
+
+The default `research-pipeline` is now:
+
+1. `idea-discovery`
+2. `experiment-bridge`
+3. `auto-review-loop`
+4. `paper-writing`
+5. `journal-shopping`
+
+That means the end-to-end flow no longer stops at a completed paper. It now continues into venue selection and journal-specific submission preparation.
+
 ## What It Does Not Do
 
 - It does not vendor or fork the ARIS skill pack into this repo
@@ -143,6 +155,17 @@ This repo can also carry local Codex skills alongside the upstream-wrapper workf
 - [journal-shopping](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\skills\journal-shopping\SKILL.md)
   - included in the default end-to-end pipeline after `paper-writing`
   - use after a final paper is complete to shortlist reachable high-prestige journals, study recent venue papers, and prepare three venue-specific submission packages
+  - studies 20 recent relevant papers for each final candidate journal
+  - adapts the paper to venue-specific writing and presentation style
+  - prepares a separate submission package for each of the final three targets
+
+Typical outputs from `journal-shopping`:
+
+- `journal-shopping/longlist.md`
+- `journal-shopping/top-3.md`
+- `journal-shopping/<journal-slug>/style-notes.md`
+- `journal-shopping/<journal-slug>/paper-set.md`
+- `submissions/<journal-slug>/`
 
 ## Perpetual Lessons Learned
 
