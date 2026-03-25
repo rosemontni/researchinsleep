@@ -47,6 +47,11 @@ ARIS is a staged research loop:
 4. **Paper writing**
    - Turn the reviewed artifacts into a paper package with LaTeX and PDFs.
 
+5. **Journal shopping**
+   - Rank reachable high-prestige journals.
+   - Study recent venue papers.
+   - Prepare three venue-specific submission packages.
+
 The important workflow rule is: each stage writes artifacts to disk, so progress survives interruptions.
 
 ## One-Minute Start
@@ -65,6 +70,7 @@ That command will:
 
 - create a run if needed
 - fetch each upstream ARIS stage
+- run the local `journal-shopping` skill after `paper-writing`
 - execute the stage through Codex
 - auto-advance when a stage writes its completion marker
 - stop only if the run completes or a stage writes a blocker note
@@ -143,6 +149,10 @@ After a run starts, the important folders are:
   - raw experiment outputs and review outputs
 - `paper/`
   - generated paper source and PDFs
+- `journal-shopping/`
+  - venue ranking, style notes, and paper-study artifacts
+- `submissions/`
+  - three journal-specific submission packages
 
 ## What This Repo’s Local Code Does
 
@@ -194,6 +204,9 @@ These are the main ideas behind how this repo works:
 
 - **Review before paper**
   - Claims are supposed to be narrowed by evidence before writing.
+
+- **Paper before venue targeting**
+  - Journal selection happens after the paper is complete enough to judge honestly.
 
 - **Prototype honesty**
   - This repo currently supports a synthetic ADRD prototype, not a real dLLM benchmark claim.

@@ -27,6 +27,7 @@ CACHE_ROOT = ROOT / ".aris-cache"
 RUNS_ROOT = ROOT / ".aris" / "runs"
 LESSONS_ROOT = ROOT / "lessons-learned"
 LESSONS_SESSION_LOG = LESSONS_ROOT / "SESSION_LOG.md"
+LOCAL_SKILLS_ROOT = ROOT / "skills"
 
 
 def utc_now() -> str:
@@ -248,6 +249,51 @@ def fetch_text(url: str) -> str:
         return response.read().decode("utf-8")
 
 
+def local_skill_path(skill_name: str) -> Path:
+    return LOCAL_SKILLS_ROOT / skill_name / "SKILL.md"
+
+
+def has_local_skill(skill_name: str) -> bool:
+    return local_skill_path(skill_name).exists()
+
+
+def get_skill_path(skill_name: str, force: bool = False) -> Path:
+    if has_local_skill(skill_name):
+        return local_skill_path(skill_name)
+    return cache_skill(skill_name, force=force)
+
+
+def list_local_skills() -> dict[str, dict[str, str]]:
+    results: dict[str, dict[str, str]] = {}
+    if not LOCAL_SKILLS_ROOT.exists():
+        return results
+
+    for skill_dir in sorted(LOCAL_SKILLS_ROOT.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.exists():
+            continue
+        description = "Local repo skill."
+        try:
+            text = skill_file.read_text(encoding="utf-8")
+            lines = text.splitlines()
+            if lines and lines[0].strip() == "---":
+                for line in lines[1:]:
+                    if line.strip() == "---":
+                        break
+                    if line.startswith("description:"):
+                        description = line.split(":", 1)[1].strip()
+                        break
+        except OSError:
+            pass
+        results[skill_dir.name] = {
+            "purpose": description,
+            "source": "local",
+        }
+    return results
+
+
 def cache_skill(skill_name: str, force: bool = False) -> Path:
     config = load_config()
     skill = config["skills"][skill_name]
@@ -345,14 +391,15 @@ def create_run(pipeline: str, goal: str, run_id: str | None, overrides: dict[str
 
 
 def render_stage_prompt(run: RunState, skill_name: str, skill_body: str) -> str:
+    skill_origin = "local repo skill" if has_local_skill(skill_name) else "upstream ARIS skill"
     prompt = f"""\
-# ARIS Upstream Skill Wrapper
+# ARIS Skill Wrapper
 
-You are running an upstream ARIS skill inside a local Codex workflow wrapper.
+You are running a {skill_origin} inside a local Codex workflow wrapper.
 
 ## Local Wrapper Goals
 
-- Use the upstream skill below as the authoritative workflow specification.
+- Use the skill below as the authoritative workflow specification for this stage.
 - Adapt any Claude Code specific wording, slash-command assumptions, or MCP references into direct Codex execution inside this workspace.
 - Prefer writing durable artifacts to disk so the run can resume cleanly.
 - Keep all local workflow state under `.aris/runs/{run.run_id}/`.
@@ -378,7 +425,7 @@ You are running an upstream ARIS skill inside a local Codex workflow wrapper.
   - `next_stage`
 - If blocked, write `.aris/runs/{run.run_id}/notes/{skill_name}.blocked.md` describing the blocker and the minimum input needed.
 
-## Upstream Skill
+## Skill Specification
 
 Source of truth follows below.
 
@@ -500,6 +547,8 @@ def cmd_skills(_: argparse.Namespace) -> int:
     config = load_config()
     for name, meta in config["skills"].items():
         print(f"{name}: {meta['purpose']}")
+    for name, meta in list_local_skills().items():
+        print(f"{name}: {meta['purpose']}")
     return 0
 
 
@@ -523,7 +572,7 @@ def cmd_status(args: argparse.Namespace) -> int:
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
-    path = cache_skill(args.skill, force=args.force)
+    path = get_skill_path(args.skill, force=args.force)
     print(path)
     return 0
 
@@ -538,7 +587,7 @@ def cmd_next(args: argparse.Namespace) -> int:
         return 0
 
     skill_name = run.current_stage
-    skill_path = cache_skill(skill_name, force=args.refresh)
+    skill_path = get_skill_path(skill_name, force=args.refresh)
     skill_body = skill_path.read_text(encoding="utf-8")
     prompt = render_stage_prompt(run, skill_name, skill_body)
     output_path = prompt_path_for(run, skill_name)

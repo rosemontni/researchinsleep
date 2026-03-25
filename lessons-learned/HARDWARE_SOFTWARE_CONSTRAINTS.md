@@ -27,3 +27,17 @@ Add `--dangerous-bypass` as an explicit local workaround for trusted workspaces.
 ### Durable Insight
 
 On this machine, artifact persistence is more important than strict sandboxing for long trusted research runs.
+
+## 2026-03-25 - Skill validation required a missing local dependency
+
+### Problem
+
+The official `quick_validate.py` script for Codex skills initially failed because `PyYAML` was not installed in the local Python environment.
+
+### Resolution
+
+Install `PyYAML`, then rerun the validator against the finished skill.
+
+### Durable Insight
+
+When extending the local skill system, validate against the real helper scripts early so missing environment dependencies surface before the skill is considered done.

@@ -12,6 +12,7 @@ This repo keeps the upstream ARIS skills as the source of truth, but adds a thin
 - `doctor` preflight checks for Codex CLI, local project signals, and paper toolchain readiness
 - validated stage completion and blocker markers before auto-advance
 - cleaner separation between workflow wrapper, run state, and example research project
+- local repo skills can extend the end-to-end pipeline without forking upstream ARIS
 - explicit end-to-end behavior built on staged, resumable artifacts rather than one monolithic prompt
 
 This workspace is a lightweight Codex-native wrapper around the upstream ARIS repository:
@@ -27,6 +28,7 @@ This workspace is a lightweight Codex-native wrapper around the upstream ARIS re
 - Caches them locally under `.aris-cache/`
 - Creates persistent local run state under `.aris/runs/<run-id>/`
 - Creates persistent project memory under `lessons-learned/`
+- Lets local repo skills participate in the same pipeline as upstream stages
 - Renders a Codex-friendly stage prompt that inlines the upstream skill text
 - Tracks which stage of the ARIS pipeline you are in
 
@@ -58,6 +60,8 @@ python .\aris_codex.py doctor
 ```
 
 This still uses the staged ARIS artifact model underneath, but the wrapper now drives the stages automatically until the run completes or a stage writes a blocker file.
+
+The default `research-pipeline` now ends with a local `journal-shopping` stage after `paper-writing`, so a completed paper can flow directly into venue selection and three journal-specific submission packages.
 
 If you want the lower-level staged controls, use the commands below.
 
@@ -131,6 +135,14 @@ For a safer one-command start, run `doctor` first and then `e2e`.
 - The wrapper keeps upstream skill URLs in `config/upstream_skills.json`.
 - Pipelines are defined locally so you can keep your preferred loop shape even if upstream adds more skills.
 - The `run` subcommand can target an explicit standalone CLI path, which is recommended on Windows to avoid the packaged app alias under `WindowsApps`.
+
+## Local Skills
+
+This repo can also carry local Codex skills alongside the upstream-wrapper workflow.
+
+- [journal-shopping](C:\Users\xliup\OneDrive\Documents\codex\researchinsleep\skills\journal-shopping\SKILL.md)
+  - included in the default end-to-end pipeline after `paper-writing`
+  - use after a final paper is complete to shortlist reachable high-prestige journals, study recent venue papers, and prepare three venue-specific submission packages
 
 ## Perpetual Lessons Learned
 

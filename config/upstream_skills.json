@@ -40,18 +40,19 @@
       "idea-discovery",
       "experiment-bridge",
       "auto-review-loop",
-      "paper-writing"
+      "paper-writing",
+      "journal-shopping"
     ],
     "research-refine-pipeline": [
       "research-refine",
       "experiment-plan",
       "experiment-bridge",
       "auto-review-loop",
-      "paper-writing"
+      "paper-writing",
+      "journal-shopping"
     ],
     "rebuttal-only": [
       "rebuttal"
     ]
   }
 }
-

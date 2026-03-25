@@ -41,3 +41,17 @@ Add `doctor` checks for upstream config, Codex CLI, local codebase signals, and 
 ### Durable Insight
 
 Preflight checks are part of the workflow, not a convenience feature.
+
+## 2026-03-25 - Local repo skills should be able to extend the upstream pipeline
+
+### Upstream Gap
+
+Useful follow-on stages like journal targeting did not belong upstream, but the end-to-end runner originally only handled upstream-cached skills.
+
+### Local Fix
+
+Teach `aris_codex.py` to resolve both upstream skills and local repo skills, then add `journal-shopping` after `paper-writing` in the default pipeline.
+
+### Durable Insight
+
+The wrapper is strongest when upstream remains the methodological core while local repo skills add project-specific final-mile stages.
