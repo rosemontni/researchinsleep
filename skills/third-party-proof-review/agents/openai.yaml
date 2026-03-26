@@ -1,0 +1,3 @@
+display_name: Third-Party Proof Review
+short_description: External-style review for proof projects and theorem notes
+default_prompt: Review this proof project as an external critical reviewer and write findings-first feedback.

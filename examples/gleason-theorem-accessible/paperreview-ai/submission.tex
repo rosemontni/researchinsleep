@@ -1,0 +1,153 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+\title{Toward an Accessible Geometric Reconstruction of Gleason's Theorem in Dimension 3}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textit{Author Note: This document is an expository reconstruction of a published proof, not a claim of a new theorem or a wholly new proof. The goal is clarity, proof-structure visibility, and pedagogical accessibility.}
+\end{center}
+
+\section*{Abstract}
+Gleason's theorem is a foundational rigidity result, but many proofs are hard for non-specialists to read. This note presents a geometry-first reconstruction of the Cooke--Keane--Moran elementary proof in dimension $3$. The reconstruction has two goals: reduce dependence on advanced physics language and make the proof architecture visible. The paper isolates the special-case latitude-rigidity argument, reconstructs the comparison-with-quadratic strategy, and rewrites the late proof as a sequence of symmetry and great-circle constraints. The result is not claimed as a new proof; it is a best-current expository reconstruction of a published elementary proof, supported by a technical appendix stack in the surrounding project.
+
+\section{Introduction}
+In the sphere formulation of Gleason's theorem, one studies bounded functions on the unit sphere $S$ in $\mathbb{R}^3$ that satisfy a single consistency condition: the sum of the function values on any orthonormal triple is constant. The remarkable conclusion is that every such function must be quadratic in suitable coordinates.
+
+This statement is deep but surprisingly geometric. One does not need to begin with density matrices or advanced quantum formalism. Instead, one can work with ordinary sphere geometry, great circles, and a carefully structured rigidity argument.
+
+The paper by Cooke, Keane, and Moran remains the most relevant published source for this geometric viewpoint. But parts of the proof are compressed, especially the middle reduction to latitude and the final contradiction. This note presents the proof in a cleaner layered form and separates:
+\begin{enumerate}[label=\arabic*.]
+\item the readable expository narrative,
+\item the strongest current technical reconstruction,
+\item the remaining imported standard machinery.
+\end{enumerate}
+
+\section{The theorem}
+Let $S$ be the unit sphere in $\mathbb{R}^3$. A bounded function $f : S \to \mathbb{R}$ is a frame function if there is a constant $w(f)$ such that for every orthonormal triple $(p,q,r)$ on the sphere,
+\[
+f(p) + f(q) + f(r) = w(f).
+\]
+Gleason's theorem in this setting says that there exists an orthonormal frame and real numbers $M,\alpha,m$ such that
+\[
+f(x,y,z) = Mx^2 + \alpha y^2 + mz^2
+\]
+for every point $(x,y,z)$ on $S$.
+
+\section{Proof architecture}
+The proof has two major halves.
+
+\subsection{Special-case rigidity}
+If the function is maximal at a pole and constant on the equator orthogonal to that pole, then it must equal
+\[
+m + (M-m)\cos^2(\theta),
+\]
+where $\theta$ is the polar angle.
+
+The proof idea is:
+\begin{enumerate}[label=\arabic*.]
+\item descent moves along special great circles cannot increase the function,
+\item every lower-latitude point can be reached by finitely many descent moves,
+\item this collapses the sphere problem to a one-variable problem in latitude,
+\item boundedness and the frame-sum rule force linearity in the latitude parameter.
+\end{enumerate}
+
+\subsection{General-case comparison}
+For a general bounded frame function $f$, choose a frame adapted to extremal values and define the quadratic comparison function
+\[
+g(x,y,z) = Mx^2 + \alpha y^2 + mz^2.
+\]
+Then set
+\[
+h = g - f.
+\]
+The rest of the proof shows that $h$ must vanish identically.
+
+The key late-proof steps are:
+\begin{enumerate}[label=\arabic*.]
+\item $h$ vanishes on six symmetry great circles,
+\item in a primed extremal frame, the extrema of $h$ force a saddle comparison,
+\item the primed saddle has only four zeros on one special circle,
+\item the unprimed zero circles force that same circle through two special antipodal pairs,
+\item that determines the circle uniquely as one of the unprimed zero circles,
+\item contradiction.
+\end{enumerate}
+
+\section{The special-case theorem}
+Fix a pole $p$. Suppose:
+\begin{enumerate}[label=\arabic*.]
+\item $f(p)$ is maximal,
+\item $f$ is constant on the equator orthogonal to $p$.
+\end{enumerate}
+Then $f$ is forced to depend only on latitude, and in fact quadratically.
+
+The conceptual core is that the proof becomes one-variable after the descent geometry is understood. Once the function is trapped between upper and lower latitude envelopes, a warmup functional-equation theorem forces those envelopes to collapse.
+
+\section{The six-circle mechanism}
+The late proof relies on two quarter-turn rotations. They generate cancellation identities for the difference function $h = g-f$. Those identities imply that if one can send a point to its antipode by an odd word in the quarter-turns, then the value of $h$ at that point must be zero.
+
+So $h$ vanishes on:
+\begin{itemize}[leftmargin=1.5em]
+\item $x=y$
+\item $x=z$
+\item $y=z$
+\item $x=-y$
+\item $x=-z$
+\item $y=-z$
+\end{itemize}
+
+\section{The final contradiction}
+Assume $h$ is not zero. Move to a primed frame adapted to the extrema of $h$. The weight-zero condition forces symmetric extrema and a zero middle value, so the natural comparison object is the saddle
+\[
+H(x',y',z') = M'(x'^2 - z'^2).
+\]
+On the primed circle $x'=y'$, the function $h$ agrees with $H$, so it has only four zeros there.
+
+But the already-known unprimed zero circles force this same primed circle through two special antipodal pairs. Those four points determine a unique great circle, which is one of the unprimed zero circles. So $h$ must vanish identically on that circle.
+
+That contradicts the saddle behavior unless the saddle coefficient is zero. Hence the extrema of $h$ are all zero, so $h$ itself is zero, and therefore $f=g$.
+
+\section{What this paper claims}
+This paper claims:
+\begin{enumerate}[label=\arabic*.]
+\item a cleaner and more pedagogically visible reconstruction of the Cooke--Keane--Moran proof,
+\item a geometry-first explanation that avoids physics-first framing,
+\item a proof architecture that is easier to audit than the compressed source.
+\end{enumerate}
+
+This paper does not claim:
+\begin{enumerate}[label=\arabic*.]
+\item a new proof of Gleason's theorem,
+\item a fully independent proof from scratch,
+\item a fully elementary proof in the sense of being easy for a high-school student.
+\end{enumerate}
+
+\section{What feedback is most useful}
+The most valuable review questions for this manuscript are:
+\begin{enumerate}[label=\arabic*.]
+\item Is the mathematical claim level honest?
+\item Is the proof architecture clear to a mathematically mature outsider?
+\item Are any parts still overcompressed or misleadingly presented as more closed than they are?
+\item Is the exposition useful as a readable route into the Cooke proof?
+\end{enumerate}
+
+\section*{References}
+\begin{enumerate}[label=\arabic*.]
+\item A. M. Gleason, \textit{Measures on the Closed Subspaces of a Hilbert Space}, 1957.
+\item Roger Cooke, Michael Keane, William Moran, \textit{An elementary proof of Gleason's theorem}, 1985.
+\item Fred Richman and Douglas Bridges, \textit{A Constructive Proof of Gleason's Theorem}, 1999.
+\item Ehud Hrushovski and Itamar Pitowsky, \textit{Generalizations of Kochen and Specker's theorem and the effectiveness of Gleason's theorem}, 2004.
+\end{enumerate}
+
+\end{document}
